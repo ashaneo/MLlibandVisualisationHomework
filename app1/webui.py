@@ -139,4 +139,4 @@ if st.button("Predict", type="primary", use_container_width=True):
         st.success(f"**Prediction → {pred_g.upper()}**")
 
 st.markdown("---")
-st.caption(":sparkles: Powered by PySpark + Streamlit")
+st.caption("200623P | SUBODHA KRA")
