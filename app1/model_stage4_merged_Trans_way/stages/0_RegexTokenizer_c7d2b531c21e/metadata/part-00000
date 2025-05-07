@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.RegexTokenizer","timestamp":1746660446062,"sparkVersion":"3.5.5","uid":"RegexTokenizer_c7d2b531c21e","paramMap":{"outputCol":"tokens","inputCol":"lyrics","pattern":"\\W"},"defaultParamMap":{"toLowercase":true,"outputCol":"RegexTokenizer_c7d2b531c21e__output","gaps":true,"minTokenLength":1,"pattern":"\\s+"}}
