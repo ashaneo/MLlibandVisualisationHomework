@@ -115,7 +115,7 @@ def predict_cached(txt: str):
     return _predict_once(txt)
 
 # ════════════════════════════════════════════════════════════════════════
-# 3️⃣  Streamlit front-end
+# 3. Streamlit front-end
 # ════════════════════════════════════════════════════════════════════════
 # st.set_page_config(page_title="Lyrics Genre Classifier", layout="centered")
 st.title("🎶 Spark-ML Lyrics Classifier")
@@ -127,7 +127,7 @@ if st.button("Predict", type="primary", use_container_width=True):
     if not lyrics_text.strip():
         st.warning("Please paste some lyrics first.")
     else:
-        with st.spinner("Crunching with Spark…"):
+        with st.spinner("Classifying the genre using SPARK"):
             probs, pred_g = predict_cached(lyrics_text)
 
         # bar-chart
