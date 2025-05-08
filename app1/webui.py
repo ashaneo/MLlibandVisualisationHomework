@@ -119,6 +119,7 @@ def predict_cached(txt: str):
 # ════════════════════════════════════════════════════════════════════════
 # st.set_page_config(page_title="Lyrics Genre Classifier", layout="centered")
 st.title("🎶 Spark-ML Lyrics Classifier")
+st.markdown("MLlib and Visualisation Homework | 200623P")
 st.markdown("Paste song lyrics below and click **Predict**:")
 
 lyrics_text = st.text_area("Lyrics", height=200)
