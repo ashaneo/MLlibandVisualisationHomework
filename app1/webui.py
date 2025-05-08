@@ -1,78 +1,19 @@
-# # webui.py  –  Streamlit front-end for the 8-genre lyrics classifier
-# # ---------------------------------------------------------------
-# import sys, os
-# from pyspark.sql import SparkSession
-# from pyspark.ml import PipelineModel
-# import pandas as pd
-# import streamlit as st
+import os, sys
 
-# # ---- Spark session -------------------------------------------------
-# PY = sys.executable                     # same interpreter for driver & workers
-# spark = (SparkSession.builder
-#          .appName("LyricsUI")
-#          .config("spark.pyspark.python", PY)
-#          .config("spark.pyspark.driver.python", PY)
-#          .getOrCreate())
-
-# # ---- Load fitted pipeline ------------------------------------------
-# MODEL_PATH = os.path.join(os.path.dirname(__file__), "model_stage3_merged")
-# model      = PipelineModel.load(MODEL_PATH)
-
-# # recover the string labels from the StringIndexerModel
-# label_stage = [s for s in model.stages if "StringIndexerModel" in s.__class__.__name__][0]
-# idx2label   = label_stage.labels
-
-# # ---- Streamlit page -----------------------------------------------
-# st.set_page_config(page_title="Lyrics Genre Classifier", layout="centered")
-# st.title("🎶 Spark-ML Lyrics Classifier")
-# st.markdown("Paste song lyrics, hit **Predict**, and see the genre probabilities:")
-
-# lyrics_text = st.text_area("Lyrics", height=200)
-
-# if st.button("Predict"):
-#     # build a single-row Spark DF
-#     pdf = pd.DataFrame({
-#         "artist_name":   ["x"],
-#         "track_name":    ["x"],
-#         "release_date":  ["2000"],
-#         "genre":         ["dummy"],
-#         "lyrics":        [lyrics_text]
-#     })
-#     sdf = spark.createDataFrame(pdf)
-
-#     result = model.transform(sdf).select("probability", "prediction").collect()[0]
-#     probs  = result["probability"].toArray().tolist()
-#     pred_i = int(result["prediction"])
-#     pred_g = idx2label[pred_i]
-
-#     # bar-chart
-#     chart_df = pd.DataFrame({"Genre": idx2label, "Probability": probs})
-#     st.bar_chart(chart_df.set_index("Genre"))
-
-#     st.success(f"**Predicted genre → {pred_g.upper()}**")
-
-# st.markdown("---")
-# st.caption("Powered by PySpark + Streamlit")
-
-
-
-# webui.py  ──────────────────────────────────────────────────────────────
-# Streamlit UI for the 8-genre Spark-ML lyrics classifier
-# • One-click prediction + bar-chart
-# • Caches Spark session & model so first hit ~3 s, later hits ~0.1 s
-# -----------------------------------------------------------------------
+# Force worker and driver to use this interpreter
+os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
+os.environ["PYSPARK_PYTHON"]        = sys.executable
 
 import os, sys, pandas as pd
 import streamlit as st
 from pyspark.sql import SparkSession
 from pyspark.ml import PipelineModel
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Lyrics Genre Classifier", layout="centered")
 MODEL_PATH = "model_stage4_merged_Trans_way_new"
 
-# ════════════════════════════════════════════════════════════════════════
-# 1️⃣  Bring up Spark + load the fitted pipeline  (cached once per run)
-# ════════════════════════════════════════════════════════════════════════
+# 1️  Bring up Spark + load the fitted pipeline  (cached once per run)
 @st.cache_resource  # survives Streamlit reruns
 def init_spark_and_model():
     PY = sys.executable                    # active conda-env Python
@@ -94,9 +35,8 @@ def init_spark_and_model():
 
 spark, model, idx2label = init_spark_and_model()
 
-# ════════════════════════════════════════════════════════════════════════
-# 2️⃣  Predict helper (Spark call)   +  Streamlit cache for repeats
-# ════════════════════════════════════════════════════════════════════════
+
+# 2️  Predict helper (Spark call)   +  Streamlit cache for repeats
 def _predict_once(txt: str):
     pdf = pd.DataFrame({"artist_name": ["x"],
                         "track_name":  ["x"],
@@ -114,9 +54,7 @@ def _predict_once(txt: str):
 def predict_cached(txt: str):
     return _predict_once(txt)
 
-# ════════════════════════════════════════════════════════════════════════
 # 3. Streamlit front-end
-# ════════════════════════════════════════════════════════════════════════
 # st.set_page_config(page_title="Lyrics Genre Classifier", layout="centered")
 st.title("🎶 Spark-ML Lyrics Classifier")
 st.markdown("MLlib and Visualisation Homework | 200623P")
@@ -131,13 +69,32 @@ if st.button("Predict", type="primary", use_container_width=True):
         with st.spinner("Classifying the genre using SPARK"):
             probs, pred_g = predict_cached(lyrics_text)
 
-        # bar-chart
-        chart_df = (pd.DataFrame({"Genre": idx2label,
-                                  "Probability": probs})
-                    .set_index("Genre"))
-        st.bar_chart(chart_df)
+        st.success(f"**Prediction → {pred_g.upper()}**") 
 
-        st.success(f"**Prediction → {pred_g.upper()}**")
+        # bar-chart & pie-chart side by side
+        col1, col2 = st.columns(2)
+
+        with col1: #bar chart
+            chart_df = (pd.DataFrame({"Genre": idx2label,
+                                    "Probability": probs})
+                        .set_index("Genre"))
+            st.bar_chart(chart_df, use_container_width=True)
+
+        with col2: # pie chart
+            pie_labels = [pred_g.upper(), "Other genres"]
+            pie_sizes  = [probs[idx2label.index(pred_g)],
+                        1 - probs[idx2label.index(pred_g)]]
+
+            fig, ax = plt.subplots()
+            ax.pie(pie_sizes,
+                labels=pie_labels,
+                autopct="%1.1f%%",
+                startangle=90,
+                wedgeprops={"linewidth": 1, "edgecolor": "white"})
+            ax.axis("equal")
+            st.pyplot(fig, use_container_width=True)
+
+        # st.success(f"**Prediction → {pred_g.upper()}**")
 
 st.markdown("---")
 st.caption("200623P | SUBODHA KRA")
