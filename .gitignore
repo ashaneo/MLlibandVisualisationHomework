@@ -1,7 +1,9 @@
 .env
 app1/model_stage2_Trans_way
-app1\model_stage4_merged_Trans_way_new
+app1/model_stage4_merged_Trans_way_new
 model_stage1
 model_stage2_Trans_way
 model_stage3_merged
 model_stage4_merged_Trans_way_new
+app1/venv
+
