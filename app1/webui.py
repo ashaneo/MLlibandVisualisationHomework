@@ -68,7 +68,7 @@ from pyspark.sql import SparkSession
 from pyspark.ml import PipelineModel
 
 st.set_page_config(page_title="Lyrics Genre Classifier", layout="centered")
-MODEL_PATH = "model_stage4_merged_Trans_way"
+MODEL_PATH = "model_stage4_merged_Trans_way_new"
 
 # ════════════════════════════════════════════════════════════════════════
 # 1️⃣  Bring up Spark + load the fitted pipeline  (cached once per run)
